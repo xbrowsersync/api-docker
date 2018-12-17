@@ -3,8 +3,6 @@ FROM node:10.14.2-alpine
 # Set environment variables
 ENV XBROWSERSYNC_API_VERSION 1.1.6
 ENV XBROWSERSYNC_API_PORT 8080
-ENV XBROWSERSYNC_DB_USER $XBROWSERSYNC_DB_USER
-ENV XBROWSERSYNC_DB_PWD $XBROWSERSYNC_DB_PWD
 
 WORKDIR /usr/src/api
 
@@ -16,7 +14,7 @@ RUN wget -q -O release.tar.gz https://github.com/xBrowserSync/API/archive/v$XBRO
 	&& rm -rf API-$XBROWSERSYNC_API_VERSION/
 
 # Install dependencies
-RUN npm install
+RUN npm install --only=production
 
 # Expose port and start api
 EXPOSE $XBROWSERSYNC_API_PORT
