@@ -7,11 +7,11 @@ ENV XBROWSERSYNC_API_PORT 8080
 WORKDIR /usr/src/api
 
 # Download release and unpack
-RUN wget -q -O release.tar.gz https://github.com/xBrowserSync/API/archive/v$XBROWSERSYNC_API_VERSION.tar.gz \
+RUN wget -q -O release.tar.gz https://github.com/xBrowserSync/api/archive/v$XBROWSERSYNC_API_VERSION.tar.gz \
 	&& tar -C . -xzf release.tar.gz \
 	&& rm release.tar.gz \
-	&& mv API-$XBROWSERSYNC_API_VERSION/* . \
-	&& rm -rf API-$XBROWSERSYNC_API_VERSION/
+	&& mv api-$XBROWSERSYNC_API_VERSION/* . \
+	&& rm -rf api-$XBROWSERSYNC_API_VERSION/
 
 # Install dependencies
 RUN npm install --only=production
