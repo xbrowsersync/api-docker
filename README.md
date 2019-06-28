@@ -10,7 +10,7 @@ This repository contains the Docker files required to get your own [xBrowserSync
 
 ## Running the API image
 
-Running the API image alone requires that you have a MongoDB instance and, ideally, a web server to reverse proxy the API behind.
+Running the API image alone requires that you have a MongoDB instance and (ideally) a web server to reverse proxy the API behind.
 
   1. Create a file named `settings.json` and include any required custom [settings](https://github.com/xbrowsersync/api#3-modify-configuration-settings) values, such as those for connecting to your MongoDB instance. For example, if you are running Docker and MongoDB on a windows server, you would point the service at the MongoDB instance running on the host using the following settings:
 
