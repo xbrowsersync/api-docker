@@ -15,6 +15,10 @@ RUN wget -q -O release.tar.gz https://github.com/xBrowserSync/api/archive/v$XBRO
 # Install dependencies
 RUN npm install --only=production
 
+# Install healthcheck
+COPY ./healthcheck.js ./
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD [ "node", "healthcheck.js" ]
+
 # Expose port and start api
 EXPOSE 8080
 CMD [ "node", "dist/api.js"]
