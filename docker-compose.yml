@@ -10,7 +10,7 @@ services:
       - "MONGO_INITDB_DATABASE=xbrowsersync"
       - "MONGO_INITDB_ROOT_PASSWORD=$XBS_DB_PASSWORD"
       - "MONGO_INITDB_ROOT_USERNAME=$XBS_DB_USERNAME"
-    image: "mongo:4.2.0"
+    image: "mongo:4.2.2"
     labels:
       - "traefik.enable=false"
     networks:
@@ -26,7 +26,7 @@ services:
     environment:
       - "XBROWSERSYNC_DB_PWD=$XBS_DB_PASSWORD"
       - "XBROWSERSYNC_DB_USER=$XBS_DB_USERNAME"
-    image: "xbrowsersync/api:1.1.10"
+    image: "xbrowsersync/api:1.1.11"
     labels:
       - "traefik.frontend.rule=Host:$XBS_API_HOSTNAME"
       - "traefik.port=8080"
@@ -40,7 +40,7 @@ services:
     container_name: "xbs-reverse-proxy"
     depends_on:
       - "api"
-    image: "traefik:1.7.18-alpine"
+    image: "traefik:1.7.20-alpine"
     labels:
       - "traefik.enable=false"
     networks:
