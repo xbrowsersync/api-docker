@@ -1,7 +1,7 @@
-FROM node:10.18.1-alpine
+FROM node:12.16.2-alpine
 
 # Set environment variables
-ENV XBROWSERSYNC_API_VERSION 1.1.11
+ENV XBROWSERSYNC_API_VERSION 1.1.12
 
 WORKDIR /usr/src/api
 
