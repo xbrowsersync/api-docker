@@ -1,8 +1,5 @@
 version: "3.7"
 
-volumes:
-  xbs-db-data:
-
 services:
   db:
     container_name: "xbs-db"
@@ -10,12 +7,8 @@ services:
       - "MONGO_INITDB_DATABASE=xbrowsersync"
       - "MONGO_INITDB_ROOT_PASSWORD=$XBS_DB_PASSWORD"
       - "MONGO_INITDB_ROOT_USERNAME=$XBS_DB_USERNAME"
-    image: "mongo:4.2.6"
-    labels:
-      - "traefik.enable=false"
-    networks:
-      - "xbs-net"
-    restart: "always"
+    image: "mongo:4.4.4"
+    restart: "unless-stopped"
     volumes:
       - "xbs-db-data:/data/db"
       - "./mongoconfig.js:/docker-entrypoint-initdb.d/mongoconfig.js"
@@ -26,33 +19,32 @@ services:
     environment:
       - "XBROWSERSYNC_DB_PWD=$XBS_DB_PASSWORD"
       - "XBROWSERSYNC_DB_USER=$XBS_DB_USERNAME"
-    image: "xbrowsersync/api:1.1.12"
-    labels:
-      - "traefik.frontend.rule=Host:$XBS_API_HOSTNAME"
-      - "traefik.port=8080"
-    networks:
-      - "xbs-net"
-    restart: "always"
+    healthcheck:
+      test: [ "CMD", "node", "/usr/src/api/healthcheck.js" ]
+      interval: "1m"
+      timeout: "10s"
+      retries: "5"
+      start_period: "30s"
+    image: "xbrowsersync/api:1.1.13"
+    restart: "unless-stopped"
     volumes:
       - "./settings.json:/usr/src/api/config/settings.json"
+      - "./healthcheck.js:/usr/src/api/healthcheck.js"
   reverse-proxy:
-    command: "--api --docker"
+    command: "caddy reverse-proxy --from $XBS_API_HOSTNAME --to api:8080"
     container_name: "xbs-reverse-proxy"
     depends_on:
       - "api"
-    image: "traefik:1.7.24-alpine"
-    labels:
-      - "traefik.enable=false"
-    networks:
-      - "xbs-net"
+    image: "caddy:2.3.0-alpine"
     ports:
       - "443:443"
       - "80:80"
-    restart: "always"
+    restart: "unless-stopped"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./acme.json:/acme.json"
-      - "./traefik.toml:/traefik.toml"
+      - "xbs-caddy-config:/config"
+      - "xbs-caddy-data:/data"
 
-networks:
-  xbs-net:
+volumes:
+  xbs-caddy-config:
+  xbs-caddy-data:
+  xbs-db-data:
