@@ -4,21 +4,25 @@ services:
   db:
     container_name: "xbs-db"
     environment:
-      - "MONGO_INITDB_DATABASE=xbrowsersync"
-      - "MONGO_INITDB_ROOT_PASSWORD=$XBS_DB_PASSWORD"
-      - "MONGO_INITDB_ROOT_USERNAME=$XBS_DB_USERNAME"
+      - "MONGO_INITDB_DATABASE=$DB_NAME"
+      - "MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD"
+      - "MONGO_INITDB_ROOT_USERNAME=$DB_USERNAME"
+      - "XBS_DB_NAME=$DB_NAME"
+      - "XBS_DB_PASSWORD=$DB_PASSWORD"
+      - "XBS_DB_USERNAME=$DB_USERNAME"
     image: "mongo:4.4.4"
     restart: "unless-stopped"
     volumes:
       - "xbs-db-data:/data/db"
+      - "xbs-db-backups:/data/backups"
       - "./mongoconfig.js:/docker-entrypoint-initdb.d/mongoconfig.js"
   api:
     container_name: "xbs-api"
     depends_on:
       - "db"
     environment:
-      - "XBROWSERSYNC_DB_PWD=$XBS_DB_PASSWORD"
-      - "XBROWSERSYNC_DB_USER=$XBS_DB_USERNAME"
+      - "XBROWSERSYNC_DB_PWD=$DB_PASSWORD"
+      - "XBROWSERSYNC_DB_USER=$DB_USERNAME"
     healthcheck:
       test: [ "CMD", "node", "/usr/src/api/healthcheck.js" ]
       interval: "1m"
@@ -31,7 +35,7 @@ services:
       - "./settings.json:/usr/src/api/config/settings.json"
       - "./healthcheck.js:/usr/src/api/healthcheck.js"
   reverse-proxy:
-    command: "caddy reverse-proxy --from $XBS_API_HOSTNAME --to api:8080"
+    command: "caddy reverse-proxy --from $API_HOSTNAME --to api:8080"
     container_name: "xbs-reverse-proxy"
     depends_on:
       - "api"
@@ -47,4 +51,5 @@ services:
 volumes:
   xbs-caddy-config:
   xbs-caddy-data:
+  xbs-db-backups:
   xbs-db-data:

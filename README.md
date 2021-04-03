@@ -30,7 +30,7 @@ Running the API image alone requires that you have a MongoDB instance and (ideal
   3. Run the following command to start an API container, providing the actual path to the `settings.json` file created in step 1. The service will be exposed via port 8080. If you did not create the environment variables in step 2, you will need to provide the actual username and password values in line, i.e. `-e XBROWSERSYNC_DB_USER=YourDatabaseUsername -e XBROWSERSYNC_DB_PWD=YourDatabasePassword`:
 
       ```
-      $ sudo docker run --name xbs-api -p 8080:8080 -e XBROWSERSYNC_DB_USER -e XBROWSERSYNC_DB_PWD -v /path/to/settings.json:/usr/src/api/config/settings.json -d xbrowsersync/api
+      docker run --name xbs-api -p 8080:8080 -e XBROWSERSYNC_DB_USER -e XBROWSERSYNC_DB_PWD -v /path/to/settings.json:/usr/src/api/config/settings.json -d xbrowsersync/api
       ```
 
       You can now access your xBrowserSync API service at http://127.0.0.1:8080.
@@ -42,20 +42,75 @@ If you do not already have a MongoDB instance or are intending to expose your xB
   1. Clone the [api-docker](https://github.com/xbrowsersync/api-docker/) GitHub repo:
 
       ```
-      $ git clone https://github.com/xbrowsersync/api-docker.git
+      git clone https://github.com/xbrowsersync/api-docker.git
       ```
   
-  2. Open the [`.env`](https://github.com/xbrowsersync/api-docker/blob/master/.env) file in a text editor and update the `XBS_API_HOSTNAME` value to correspond to the host name that the API service will be exposed over (ensure you have configured your DNS provider to point the desired host name to your host's IP address). Also, change the `XBS_DB_USERNAME` and `XBS_DB_PASSWORD` values to any of your choosing.
+  2. Open the [`.env`](https://github.com/xbrowsersync/api-docker/blob/master/.env) file in a text editor and update the `API_HOSTNAME` value to correspond to the host name that the API service will be exposed over (ensure you have configured your DNS provider to point the desired host name to your host's IP address). Also, change the `DB_USERNAME` and `DB_PASSWORD` values to any of your choosing.
 
   3. (Optionally) open the [`settings.json`](https://github.com/xbrowsersync/api-docker/blob/master/settings.json) file and include any custom [settings](https://github.com/xbrowsersync/api#3-modify-configuration-settings) values you wish to run on your service. Important: do not change the `db.host` value.
   
   4. Run the following command to start the containers:
 
       ```
-      $ docker-compose up -d
+      docker-compose up -d
       ```
 
-      You can now access your xBrowserSync API service over HTTPS at the value of `XBS_API_HOSTNAME` defined in the [`.env`](https://github.com/xbrowsersync/api-docker/blob/master/.env) file.
+      You can now access your xBrowserSync API service over HTTPS at the value of `API_HOSTNAME` defined in the [`.env`](https://github.com/xbrowsersync/api-docker/blob/master/.env) file.
+
+## Upgrade process
+
+If you wish to upgrade your existing production-ready service created using the [`docker-compose.yml`](https://github.com/xbrowsersync/api-docker/blob/master/docker-compose.yml) file, you may encounter database errors when upgrading the MongoDB version. To avoid these issues, it is recommended that you export the db data from the old version and restore to the new version once up and running.
+
+The following steps detail the process in full:
+
+
+  1. Connect to the MongoDB container:
+
+      ```
+      docker exec -it xbs-db bash
+      ```
+
+  2. Export db data to the `xbs-db-backups` Docker volume using [mongodump](https://docs.mongodb.com/database-tools/mongodump/):
+
+      ```
+      mongodump --db $XBS_DB_NAME --host localhost --port 27017 --username $XBS_DB_USERNAME --password $XBS_DB_PASSWORD --authenticationDatabase admin --archive=/data/backups/xbs-db-`date +"%Y-%m-%d"`.gz --gzip
+      ```
+
+  3. Exit the MongoDB container and navigate to the api-docker GitHub repo folder. Stop and remove all containers:
+
+      ```
+      docker-compose down
+      ```
+
+  4. Delete the `xbs-db-data` Docker volume before upgrading MongoDB. You need to find the volume name first using:
+
+      ```
+      docker volume ls
+      ```
+
+      It will be something like `api-docker_xbs-db-data`. Once located, delete it with:
+
+      ```
+      docker volume rm api-docker_xbs-db-data
+      ```
+
+  5. Get latest changes and start the containers:
+
+      ```
+      git pull
+      docker-compose up -d
+      ```
+  6. Connect to the MongoDB container:
+
+      ```
+      docker exec -it xbs-db bash
+      ```
+  
+  7. Restore db data from the `xbs-db-backups` Docker volume using [mongorestore](https://docs.mongodb.com/database-tools/mongorestore/) (replace `{BackupFileName}` with the actual backup file name):
+
+      ```
+      mongorestore --username $XBS_DB_USERNAME --password $XBS_DB_PASSWORD --authenticationDatabase admin --verbose=5 --gzip --drop --archive=/data/backups/{BackupFileName}
+      ```
 
 ## Issues and feature requests
 
