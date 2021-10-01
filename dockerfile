@@ -11,6 +11,13 @@ RUN wget -q -O release.tar.gz https://github.com/xBrowserSync/api/archive/v$XBRO
 	&& rm release.tar.gz \
 	&& mv api-$XBROWSERSYNC_API_VERSION/* . \
 	&& rm -rf api-$XBROWSERSYNC_API_VERSION/
+        && adduser --disabled-password --gecos "" xbs \
+        && chown -R xbs:xbs . \
+        && mkdir -p /var/log/xBrowserSync/ \
+        && chown -R xbs:xbs /var/log/xBrowserSync/.
+
+# Continue in newly created xbs user
+USER xbs
 
 # Install dependencies
 RUN npm install --only=production
