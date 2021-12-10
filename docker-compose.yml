@@ -10,7 +10,7 @@ services:
       - "XBS_DB_NAME=$DB_NAME"
       - "XBS_DB_PASSWORD=$DB_PASSWORD"
       - "XBS_DB_USERNAME=$DB_USERNAME"
-    image: "mongo:latest"
+    image: "mongo:4.4.4"
     restart: "unless-stopped"
     volumes:
       - "xbs-db-data:/data/db"
@@ -29,12 +29,27 @@ services:
       timeout: "10s"
       retries: "5"
       start_period: "30s"
-    image: "xbrowsersync/api:latest"
+    image: "xbrowsersync/api:1.1.13"
     restart: "unless-stopped"
     volumes:
       - "./settings.json:/usr/src/api/config/settings.json"
       - "./healthcheck.js:/usr/src/api/healthcheck.js"
+  reverse-proxy:
+    command: "caddy reverse-proxy --from $API_HOSTNAME --to api:8080"
+    container_name: "xbs-reverse-proxy"
+    depends_on:
+      - "api"
+    image: "caddy:2.3.0-alpine"
+    ports:
+      - "443:443"
+      - "80:80"
+    restart: "unless-stopped"
+    volumes:
+      - "xbs-caddy-config:/config"
+      - "xbs-caddy-data:/data"
 
 volumes:
+  xbs-caddy-config:
+  xbs-caddy-data:
   xbs-db-backups:
   xbs-db-data:
