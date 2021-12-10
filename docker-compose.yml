@@ -10,7 +10,7 @@ services:
       - "XBS_DB_NAME=$DB_NAME"
       - "XBS_DB_PASSWORD=$DB_PASSWORD"
       - "XBS_DB_USERNAME=$DB_USERNAME"
-    image: "mongo:4.4.4"
+    image: "mongo:latest"
     restart: "unless-stopped"
     volumes:
       - "xbs-db-data:/data/db"
@@ -29,7 +29,7 @@ services:
       timeout: "10s"
       retries: "5"
       start_period: "30s"
-    image: "xbrowsersync/api:1.1.13"
+    image: "xbrowsersync/api:latest"
     restart: "unless-stopped"
     volumes:
       - "./settings.json:/usr/src/api/config/settings.json"
@@ -39,7 +39,7 @@ services:
     container_name: "xbs-reverse-proxy"
     depends_on:
       - "api"
-    image: "caddy:2.3.0-alpine"
+    image: "caddy:alpine"
     ports:
       - "443:443"
       - "80:80"
