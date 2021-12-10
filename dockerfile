@@ -17,6 +17,7 @@ RUN XBROWSERSYNC_API_VERSION="$(curl --silent "https://api.github.com/repos/xbro
 	&& rm -rf api-$XBROWSERSYNC_API_VERSION/
 
 # Install dependencies
+RUN apk add python2 make
 RUN npm install --only=production
 
 # Expose port and start api
